@@ -49,11 +49,11 @@ class SelectScene extends Phaser.Scene {
             fontSize: '20px',
             fill: '#ffffff'
         });
-
+        this.borders = [];
         this.music = this.sound.add('select_music', { loop: true, volume: 0.4 });
         this.music.play();
 
-        let enemigos = [
+        this.enemigos = [
             { key: 'caralucas', x: 80, y: 120, img: 'enemy1' },
             { key: 'negrouu', x: 160, y: 120, img: 'enemy2' },
             { key: 'santos', x: 240, y: 120, img: 'enemy3' },
@@ -64,15 +64,64 @@ class SelectScene extends Phaser.Scene {
             { key: 'chino', x: 320, y: 220, img: 'enemy8' }
         ];
 
-        enemigos.forEach(e => {
-            let sprite = this.add.image(e.x, e.y, e.img).setScale(0.06).setInteractive();
+        this.icons = [];
 
-            sprite.on('pointerdown', () => {
-                this.music.stop();
-                this.registry.set('enemySelected', e.key);
-                this.scene.start('GameScene');
-            });
-        });
+        this.enemigos.forEach(e => {
+    let sprite = this.add.image(e.x, e.y, e.img).setScale(0.06);
+    this.icons.push(sprite);
+
+    let rect = this.add.rectangle(e.x, e.y, 60, 90)
+        .setStrokeStyle(3, 0xffff00)
+        .setAlpha(0) // empieza invisible
+
+    // 👇 animación de parpadeo
+    this.tweens.add({
+        targets: rect,
+        alpha: { from: 0.2, to: 1 },
+        duration: 400,
+        yoyo: true,
+        repeat: -1
+    });
+
+    this.borders.push(rect);
+    });
+
+        this.seleccion = 0;
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    }
+
+    update() {
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
+            this.seleccion = (this.seleccion + 1) % this.enemigos.length;
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
+            this.seleccion = (this.seleccion - 1 + this.enemigos.length) % this.enemigos.length;
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
+            this.seleccion = (this.seleccion + 4) % this.enemigos.length;
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
+            this.seleccion = (this.seleccion - 4 + this.enemigos.length) % this.enemigos.length;
+        }
+
+        // resaltado
+        this.borders.forEach((border, i) => {
+        border.setVisible(i === this.seleccion);
+    });
+
+        // seleccionar
+        if (Phaser.Input.Keyboard.JustDown(this.space)) {
+            let elegido = this.enemigos[this.seleccion];
+
+            this.music.stop();
+            this.registry.set('enemySelected', elegido.key);
+            this.scene.start('GameScene');
+        }
     }
 }
 
