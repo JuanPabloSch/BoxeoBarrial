@@ -1,0 +1,15 @@
+# Node (por si después usás herramientas)
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+
+# Logs
+*.log
+
+# Opcional (si exportás cosas temporales)
+dist/
