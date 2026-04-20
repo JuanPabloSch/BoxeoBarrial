@@ -120,8 +120,89 @@ class SelectScene extends Phaser.Scene {
 
             this.music.stop();
             this.registry.set('enemySelected', elegido.key);
-            this.scene.start('GameScene');
+            this.scene.start('VsScene');
         }
+    }
+}
+
+class VsScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'VsScene' });
+    }
+
+    preload() {
+        // jugador (usamos idle)
+        this.load.image('p_idle', 'assets/player_idle.png');
+
+        // enemigos
+        this.load.image('caralucas_idle', 'assets/enemy/caralucas/caralucas.png');
+        this.load.image('negrouu_idle', 'assets/enemy/negrouu/negrouu.png');
+        this.load.image('santos_idle', 'assets/enemy/santos/santos.png');
+        this.load.image('sebu_idle', 'assets/enemy/sebu/sebu.png');
+        this.load.image('nahui_idle', 'assets/enemy/nahui/nahui.png');
+        this.load.image('oscar_idle', 'assets/enemy/el oscar/el oscar.png');
+        this.load.image('juano_idle', 'assets/enemy/juano/juano.png');
+        this.load.image('chino_idle', 'assets/enemy/chino/chino.png');
+    }
+
+    create() {
+        this.cameras.main.setBackgroundColor('#000000');
+
+        let selected = this.registry.get('enemySelected');
+
+        let enemiesConfig = {
+            caralucas: 'caralucas_idle',
+            negrouu: 'negrouu_idle',
+            santos: 'santos_idle',
+            sebu: 'sebu_idle',
+            nahui: 'nahui_idle',
+            oscar: 'oscar_idle',
+            juano: 'juano_idle',
+            chino: 'chino_idle'
+        };
+
+        let enemySprite = enemiesConfig[selected];
+
+        // jugador izquierda
+        player = this.add.image(200, 240, 'p_idle')
+        .setScale(0.2)
+        .setAlpha(0); // invisible
+
+        // enemigo derecha
+        let enemy = this.add.image(500, 150, enemySprite).setScale(0.3);
+
+        // texto VS
+        let vsText = this.add.text(80, 130, "VS", {
+            fontSize: "40px",
+            fill: "#ff0000"
+        }).setAlpha(0);
+
+        // animaciones entrada
+        this.tweens.add({
+            targets: player,
+            x: 120,
+            duration: 400,
+            ease: 'Power2'
+        });
+
+        this.tweens.add({
+            targets: enemy,
+            x: 280,
+            duration: 400,
+            ease: 'Power2'
+        });
+
+        this.tweens.add({
+            targets: vsText,
+            alpha: 1,
+            duration: 300,
+            delay: 300
+        });
+
+        // pasar a pelea
+        this.time.delayedCall(1500, () => {
+            this.scene.start('GameScene');
+        });
     }
 }
 
@@ -165,7 +246,7 @@ class GameScene extends Phaser.Scene {
 
     create() {
         this.add.image(200, 180, 'ring').setScale(0.26);
-
+        this.cameras.main.fadeIn(300);
         let selected = this.registry.get('enemySelected');
 
         let enemiesConfig = {
@@ -217,7 +298,7 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [MenuScene, SelectScene, GameScene]
+    scene: [MenuScene, SelectScene, VsScene, GameScene]
 };
 
 const game = new Phaser.Game(config);
