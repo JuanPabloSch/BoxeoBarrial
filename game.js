@@ -32,7 +32,6 @@ class SelectScene extends Phaser.Scene {
     }
 
     preload() {
-        // imágenes de enemigos (caras o sprites)
         this.load.image('enemy1', 'assets/enemy/caralucas/caralucas.png');
         this.load.image('enemy2', 'assets/enemy/negrouu/negrouu.png');
         this.load.image('enemy3', 'assets/enemy/santos/santos.png');
@@ -51,52 +50,107 @@ class SelectScene extends Phaser.Scene {
             fill: '#ffffff'
         });
 
-        // música
         this.music = this.sound.add('select_music', { loop: true, volume: 0.4 });
         this.music.play();
 
-        // enemigos (botones)
-        let e1 = this.add.image(80, 120, 'enemy1').setScale(0.06).setInteractive();
-        let e2 = this.add.image(160, 120, 'enemy2').setScale(0.06).setInteractive();
-        let e3 = this.add.image(240, 120, 'enemy3').setScale(0.06).setInteractive();
-        let e4 = this.add.image(320, 120, 'enemy4').setScale(0.06).setInteractive();
-        let e5 = this.add.image(80, 220, 'enemy5').setScale(0.06).setInteractive();
-        let e6 = this.add.image(160, 220, 'enemy6').setScale(0.06).setInteractive();
-        let e7 = this.add.image(240, 220, 'enemy7').setScale(0.06).setInteractive();
-        let e8 = this.add.image(320, 220, 'enemy8').setScale(0.06).setInteractive();
+        let enemigos = [
+            { key: 'caralucas', x: 80, y: 120, img: 'enemy1' },
+            { key: 'negrouu', x: 160, y: 120, img: 'enemy2' },
+            { key: 'santos', x: 240, y: 120, img: 'enemy3' },
+            { key: 'sebu', x: 320, y: 120, img: 'enemy4' },
+            { key: 'nahui', x: 80, y: 220, img: 'enemy5' },
+            { key: 'oscar', x: 160, y: 220, img: 'enemy6' },
+            { key: 'juano', x: 240, y: 220, img: 'enemy7' },
+            { key: 'chino', x: 320, y: 220, img: 'enemy8' }
+        ];
 
-        e1.on('pointerdown', () => this.selectEnemy('caralucas'));
-        e2.on('pointerdown', () => this.selectEnemy('negrouu'));
-        e3.on('pointerdown', () => this.selectEnemy('santos'));
-        e4.on('pointerdown', () => this.selectEnemy('sebu'));
-        e5.on('pointerdown', () => this.selectEnemy('nahui'));
-        e6.on('pointerdown', () => this.selectEnemy('el oscar'));
-        e7.on('pointerdown', () => this.selectEnemy('juano'));
-        e8.on('pointerdown', () => this.selectEnemy('chino'));
-    }
+        enemigos.forEach(e => {
+            let sprite = this.add.image(e.x, e.y, e.img).setScale(0.06).setInteractive();
 
-    selectEnemy(enemyKey) {
-        this.music.stop();
-
-        // 👇 guardamos el enemigo elegido
-        this.registry.set('enemySelected', enemyKey);
-
-        this.scene.start('GameScene');
+            sprite.on('pointerdown', () => {
+                this.music.stop();
+                this.registry.set('enemySelected', e.key);
+                this.scene.start('GameScene');
+            });
+        });
     }
 }
 
-// 👇 ESTE ES EL FIX IMPORTANTE
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
     }
 
     preload() {
-        preload.call(this);
+        this.load.image('ring', 'assets/ring.png');
+
+        this.load.image('p_idle', 'assets/player_idle.png');
+        this.load.image('p_left', 'assets/player_left.png');
+        this.load.image('p_right', 'assets/player_right.png');
+        this.load.image('p_punch', 'assets/player_punch.png');
+
+        this.load.image('caralucas_idle', 'assets/enemy/caralucas/caralucas.png');
+        this.load.image('negrouu_idle', 'assets/enemy/negrouu/negrouu.png');
+        this.load.image('santos_idle', 'assets/enemy/santos/santos.png');
+        this.load.image('sebu_idle', 'assets/enemy/sebu/sebu.png');
+        this.load.image('nahui_idle', 'assets/enemy/nahui/nahui.png');
+        this.load.image('oscar_idle', 'assets/enemy/el oscar/el oscar.png');
+        this.load.image('juano_idle', 'assets/enemy/juano/juano.png');
+        this.load.image('chino_idle', 'assets/enemy/chino/chino.png');
+
+        this.load.image('e_attack', 'assets/enemy_attack.png');
+        this.load.image('e_dodge', 'assets/enemy_dodge.png');
+        this.load.image('e_hit', 'assets/enemy_hit.png');
+
+        this.load.audio('punch', 'assets/punch.wav');
+
+        this.load.audio('music_caralucas', 'assets/enemy/caralucas/music.mp3');
+        this.load.audio('music_negrouu', 'assets/enemy/negrouu/music.mp3');
+        this.load.audio('music_santos', 'assets/enemy/santos/music.mp3');
+        this.load.audio('music_sebu', 'assets/enemy/sebu/music.mp3');
+        this.load.audio('music_nahui', 'assets/enemy/nahui/music.mp3');
+        this.load.audio('music_oscar', 'assets/enemy/el oscar/music.mp3');
+        this.load.audio('music_juano', 'assets/enemy/juano/music.mp3');
+        this.load.audio('music_chino', 'assets/enemy/chino/music.mp3');
     }
 
     create() {
-        create.call(this);
+        this.add.image(200, 180, 'ring').setScale(0.26);
+
+        let selected = this.registry.get('enemySelected');
+
+        let enemiesConfig = {
+            caralucas: { sprite: 'caralucas_idle', music: 'music_caralucas' },
+            negrouu: { sprite: 'negrouu_idle', music: 'music_negrouu' },
+            santos: { sprite: 'santos_idle', music: 'music_santos' },
+            sebu: { sprite: 'sebu_idle', music: 'music_sebu' },
+            nahui: { sprite: 'nahui_idle', music: 'music_nahui' },
+            oscar: { sprite: 'oscar_idle', music: 'music_oscar' },
+            juano: { sprite: 'juano_idle', music: 'music_juano' },
+            chino: { sprite: 'chino_idle', music: 'music_chino' }
+        };
+
+        let enemyData = enemiesConfig[selected];
+
+        enemy = this.add.image(200, 180, enemyData.sprite).setScale(0.2);
+        player = this.add.image(200, 240, 'p_idle').setScale(0.2);
+
+        playerBar = this.add.rectangle(20, 20, 100, 10, 0x00ff00).setOrigin(0, 0);
+        enemyBar = this.add.rectangle(280, 20, 100, 10, 0xff0000).setOrigin(0, 0);
+
+        cursors = this.input.keyboard.createCursorKeys();
+
+        punchSound = this.sound.add('punch');
+
+        music = this.sound.add(enemyData.music, { loop: true, volume: 0.3 });
+        music.play();
+
+        this.time.addEvent({
+            delay: 2000,
+            callback: enemyAttack,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     update() {
@@ -141,83 +195,6 @@ let dodgeLeftX = 140;
 let dodgeRightX = 260;
 
 let gameOver = false;
-
-// ---------------- PRELOAD ----------------
-function preload() {
-    this.load.image('ring', 'assets/ring.png');
-
-    this.load.image('p_idle', 'assets/player_idle.png');
-    this.load.image('p_left', 'assets/player_left.png');
-    this.load.image('p_right', 'assets/player_right.png');
-    this.load.image('p_punch', 'assets/player_punch.png');
-
-    this.load.image('e_idle', 'assets/enemy_idle.png');
-    this.load.image('e_attack', 'assets/enemy_attack.png');
-    this.load.image('e_dodge', 'assets/enemy_dodge.png');
-    this.load.image('e_hit', 'assets/enemy_hit.png');
-
-    this.load.audio('punch', 'assets/punch.wav');
-    this.load.audio('music_caralucas', 'assets/enemy/caralucas/music.mp3');
-    this.load.audio('music_negrouu', 'assets/enemy/negrouu/music.mp3');
-    this.load.audio('music_santos', 'assets/enemy/santos/music.mp3');
-    this.load.audio('music_sebu', 'assets/enemy/sebu/music.mp3');
-    this.load.audio('music_nahui', 'assets/enemy/nahui/music.mp3');
-    this.load.audio('music_oscar', 'assets/enemy/el oscar/music.mp3');
-    this.load.audio('music_juano', 'assets/enemy/juano/music.mp3');
-    this.load.audio('music_chino', 'assets/enemy/chino/music.mp3');
-
-}
-
-// ---------------- CREATE ----------------
-    function create() {
-    this.add.image(200, 180, 'ring').setScale(0.26);
-
-    let selected = this.registry.get('enemySelected');
-
-    let enemySprite = 'e_idle'; // default
-
-    let enemiesConfig = {
-    caralucas: { sprite: 'caralucas_idle', music: 'music_caralucas' },
-    negrouu: { sprite: 'negrouu_idle', music: 'music_negrouu' },
-    santos: { sprite: 'santos_idle', music: 'music_santos' },
-    sebu: { sprite: 'sebu_idle', music: 'music_sebu' },
-    nahui: { sprite: 'nahui_idle', music: 'music_nahui' },
-    'el oscar': { sprite: 'oscar_idle', music: 'music_oscar' },
-    juano: { sprite: 'juano_idle', music: 'music_juano' },
-    chino: { sprite: 'chino_idle', music: 'music_chino' }
-    };
-
-let selected = this.registry.get('enemySelected');
-let enemyData = enemiesConfig[selected];
-
-enemy = this.add.image(200, 180, enemyData.sprite).setScale(0.2);
-
-music = this.sound.add(enemyData.music, { loop: true, volume: 0.3 });
-music.play();
-
-    enemy = this.add.image(200, 180, enemySprite).setScale(0.2);
-
-    player = this.add.image(200, 240, 'p_idle').setScale(0.2);
-
-    playerBar = this.add.rectangle(20, 20, 100, 10, 0x00ff00).setOrigin(0, 0);
-    enemyBar = this.add.rectangle(280, 20, 100, 10, 0xff0000).setOrigin(0, 0);
-
-    cursors = this.input.keyboard.createCursorKeys();
-
-    punchSound = this.sound.add('punch');
-    
-    let musicKey = 'music_chino'; // default
-
-    music = this.sound.add(musicKey, { loop: true, volume: 0.3 });
-    music.play();
-
-    this.time.addEvent({
-        delay: 2000,
-        callback: enemyAttack,
-        callbackScope: this,
-        loop: true
-    });
-}
 
 // ---------------- UPDATE ----------------
 function update() {
