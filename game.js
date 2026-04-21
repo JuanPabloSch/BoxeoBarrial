@@ -37,7 +37,7 @@ class SelectScene extends Phaser.Scene {
         this.load.image('enemy3', 'assets/enemy/santos/santos.png');
         this.load.image('enemy4', 'assets/enemy/sebu/sebu.png');
         this.load.image('enemy5', 'assets/enemy/nahui/nahui.png');
-        this.load.image('enemy6', 'assets/enemy/el oscar/el oscar.png');
+        this.load.image('enemy6', 'assets/enemy/oscar/oscar.png');
         this.load.image('enemy7', 'assets/enemy/juano/juano.png');
         this.load.image('enemy8', 'assets/enemy/chino/chino.png');
 
@@ -140,7 +140,7 @@ class VsScene extends Phaser.Scene {
         this.load.image('santos_idle', 'assets/enemy/santos/santos.png');
         this.load.image('sebu_idle', 'assets/enemy/sebu/sebu.png');
         this.load.image('nahui_idle', 'assets/enemy/nahui/nahui.png');
-        this.load.image('oscar_idle', 'assets/enemy/el oscar/el oscar.png');
+        this.load.image('oscar_idle', 'assets/enemy/oscar/oscar.png');
         this.load.image('juano_idle', 'assets/enemy/juano/juano.png');
         this.load.image('chino_idle', 'assets/enemy/chino/chino.png');
     }
@@ -224,7 +224,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('santos_idle', 'assets/enemy/santos/santos.png');
         this.load.image('sebu_idle', 'assets/enemy/sebu/sebu.png');
         this.load.image('nahui_idle', 'assets/enemy/nahui/nahui.png');
-        this.load.image('oscar_idle', 'assets/enemy/el oscar/el oscar.png');
+        this.load.image('oscar_idle', 'assets/enemy/eoscar/oscar.png');
         this.load.image('juano_idle', 'assets/enemy/juano/juano.png');
         this.load.image('chino_idle', 'assets/enemy/chino/chino.png');
 
@@ -239,7 +239,7 @@ class GameScene extends Phaser.Scene {
         this.load.audio('music_santos', 'assets/enemy/santos/music.mp3');
         this.load.audio('music_sebu', 'assets/enemy/sebu/music.mp3');
         this.load.audio('music_nahui', 'assets/enemy/nahui/music.mp3');
-        this.load.audio('music_oscar', 'assets/enemy/el oscar/music.mp3');
+        this.load.audio('music_oscar', 'assets/enemy/oscar/music.mp3');
         this.load.audio('music_juano', 'assets/enemy/juano/music.mp3');
         this.load.audio('music_chino', 'assets/enemy/chino/music.mp3');
     }
