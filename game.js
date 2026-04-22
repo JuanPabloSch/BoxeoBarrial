@@ -44,6 +44,7 @@ class SelectScene extends Phaser.Scene {
         this.load.image('enemy8', 'assets/enemy/chino/chino.png');
 
         this.load.audio('select_music', 'assets/sounds/select.mp3');
+        this.load.audio('select_click', 'assets/sounds/select_click.wav');
     }
 
     create() {
@@ -97,6 +98,7 @@ for (let i = 0; i < 8; i++) {
 
         this.music = this.sound.add('select_music', { loop: true, volume: 0.4 });
         this.music.play();
+        this.selectSound = this.sound.add('select_click', { volume: 0.6 });
 
         this.enemigos = [
             { key: 'caralucas', x: 80, y: 120, img: 'enemy1' },
@@ -151,6 +153,7 @@ for (let i = 0; i < 8; i++) {
 
         if (Phaser.Input.Keyboard.JustDown(this.space)) {
             let elegido = this.enemigos[this.seleccion];
+            this.selectSound.play();
             this.music.stop();
             this.registry.set('enemySelected', elegido.key);
             this.scene.start('VsScene');
@@ -234,6 +237,8 @@ class GameScene extends Phaser.Scene {
         this.load.audio('counter', 'assets/sounds/counter.wav');
         this.load.audio('dodge', 'assets/sounds/dodge.wav');
         this.load.audio('bell', 'assets/sounds/bell.wav');
+        this.load.audio('enemyAttack', 'assets/sounds/enemy_attack.wav');
+        this.load.audio('enemyDodge', 'assets/sounds/enemy_dodge.wav');
     }
 
     create() {
@@ -257,6 +262,8 @@ class GameScene extends Phaser.Scene {
         counterSound = this.sound.add('counter');
         dodgeSound = this.sound.add('dodge');
         bellSound = this.sound.add('bell');
+        this.enemyAttackSound = this.sound.add('enemyAttack', { volume: 0.6 });
+        this.enemyDodgeSound = this.sound.add('enemyDodge', { volume: 0.5 });
 
         this.setEnemyState = (state) => {
             enemy.setTexture(this.enemyKey + '_' + state);
@@ -337,6 +344,8 @@ function update() {
         if (distance < 50) {
 
         if (Math.random() < 0.5 && !enemyStunned) {
+        
+        this.enemyDodgeSound.play();
 
         this.setEnemyState('dodge');
 
@@ -419,6 +428,7 @@ function enemyAttack() {
         enemy.clearTint();
         enemy.setTint(0xff6b6b); // rojo (ataque)
         this.setEnemyState('attack');
+        this.enemyAttackSound.play();
 
         if (attackSide === "left") enemy.x -= 20;
         else enemy.x += 20;
