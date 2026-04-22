@@ -32,6 +32,7 @@ class SelectScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('select_bg', 'assets/background/select_bg.png');
         // iconos (selección)
         this.load.image('enemy1', 'assets/enemy/caralucas/caralucas.png');
         this.load.image('enemy2', 'assets/enemy/negrouu/negrouu.png');
@@ -46,6 +47,10 @@ class SelectScene extends Phaser.Scene {
     }
 
     create() {
+        // 👇 FONDO (va primero)
+        this.add.image(200, 150, 'select_bg')
+        .setDisplaySize(400, 300);
+
         this.add.text(90, 20, 'Elegí tu rival', {
             fontSize: '20px',
             fill: '#ffffff'
@@ -166,12 +171,12 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('ring', 'assets/ring.png');
+        this.load.image('ring', 'assets/background/ring.png');
 
-        this.load.image('p_idle', 'assets/player_idle.png');
-        this.load.image('p_left', 'assets/player_left.png');
-        this.load.image('p_right', 'assets/player_right.png');
-        this.load.image('p_punch', 'assets/player_punch.png');
+        this.load.image('p_idle', 'assets/player/player_idle.png');
+        this.load.image('p_left', 'assets/player/player_left.png');
+        this.load.image('p_right', 'assets/player/player_right.png');
+        this.load.image('p_punch', 'assets/player/player_punch.png');
 
         let enemigos = ['caralucas','negrouu','santos','sebu','nahui','oscar','juano','chino'];
 
@@ -183,7 +188,9 @@ class GameScene extends Phaser.Scene {
             this.load.audio('music_' + e, `assets/enemy/${e}/music.mp3`);
         });
 
-        this.load.audio('punch', 'assets/punch.wav');
+        this.load.audio('punch', 'assets/sounds/punch.wav');
+        this.load.audio('counter', 'assets/sounds/counter.wav');
+        this.load.audio('dodge', 'assets/sounds/dodge.wav');
     }
 
     create() {
@@ -203,6 +210,9 @@ class GameScene extends Phaser.Scene {
 
         music = this.sound.add('music_' + selected, { loop: true, volume: 0.3 });
         music.play();
+
+        counterSound = this.sound.add('counter');
+        dodgeSound = this.sound.add('dodge');
 
         this.setEnemyState = (state) => {
             enemy.setTexture(this.enemyKey + '_' + state);
@@ -246,6 +256,8 @@ let dodgeTimer = 0;
 let centerX = 200, dodgeLeftX = 140, dodgeRightX = 260;
 
 let gameOver = false;
+let counterSound;
+let dodgeSound;
 
 function update() {
     if (gameOver) return;
@@ -269,7 +281,6 @@ function update() {
     }
 
     if (Phaser.Input.Keyboard.JustDown(cursors.space) && canPunch && !enemyAttacking) {
-        punchSound.play();
         canPunch = false;
         setTimeout(() => canPunch = true, 500);
 
@@ -279,17 +290,56 @@ function update() {
         let distance = Math.abs(player.x - enemy.x);
 
         if (distance < 50) {
-            if (Math.random() < 0.5 && !enemyStunned) {
-                this.setEnemyState('dodge');
-                setTimeout(() => this.setEnemyState('idle'), 200);
-                return;
-            }
 
-            enemyHealth--;
-            enemyBar.width = enemyHealth * 20;
+        if (Math.random() < 0.5 && !enemyStunned) {
+
+        this.setEnemyState('dodge');
+
+        let dir = Math.random() < 0.5 ? -1 : 1;
+
+        this.tweens.add({
+            targets: enemy,
+            x: enemy.x + (40 * dir), // 👈 se corre al costado
+            duration: 120,
+            ease: 'Power2',
+            yoyo: true, // 👈 vuelve solo
+            onComplete: () => {
+                this.setEnemyState('idle');
+            }
+        });
+
+        return;
+    }
+
+
+        let damage = canCounter ? 2 : 1;
+
+        // 🔊 sonido
+        if (canCounter) {
+            counterSound.play({ volume: 1.0 }); // fuerte
+        } else {
+            punchSound.play({ volume: 0.5 }); // normal
+        }
+
+        enemyHealth -= damage;
+        enemyBar.width = enemyHealth * 20;
 
             this.setEnemyState('hit');
             setTimeout(() => this.setEnemyState('idle'), 200);
+            // 👇 SOLO EFECTO (sin cambiar lógica)
+        if (canCounter) {
+            counterSound.play();
+
+            this.cameras.main.shake(150, 0.015);
+
+            enemy.setTint(0xfff176); // amarillo suave
+
+            setTimeout(() => {
+                enemy.clearTint();
+            }, 300);
+
+            canCounter = false;
+        }
 
             if (enemyHealth <= 0) {
                 gameOver = true;
@@ -307,14 +357,14 @@ function enemyAttack() {
     let attackSide = Math.random() < 0.5 ? "left" : "right";
 
     // 🟡 FASE 1: AVISO VISUAL
-    enemy.setTint(0xffff00); // amarillo (aviso)
+    enemy.setTint(0xffe066); // amarillo (aviso)
     this.setEnemyState('idle');
 
     setTimeout(() => {
 
         // 🔴 FASE 2: ATAQUE REAL
         enemy.clearTint();
-        enemy.setTint(0xff0000); // rojo (ataque)
+        enemy.setTint(0xff6b6b); // rojo (ataque)
         this.setEnemyState('attack');
 
         if (attackSide === "left") enemy.x -= 20;
@@ -347,15 +397,18 @@ function enemyAttack() {
                     });
                 }
             } else {
-                canCounter = true;
+            dodgeSound.play(); // 👈 SONIDO SOLO CUANDO EL PLAYER ESQUIVA
 
-                enemy.setTint(0x00ff00);
+            canCounter = true;
 
-                setTimeout(() => {
-                    canCounter = false;
-                    enemy.clearTint();
-                }, 1000);
-            }
+            enemy.setTint(0x6bff95);
+
+            setTimeout(() => {
+                canCounter = false;
+                enemy.clearTint();
+            }, 1000);
+            this.cameras.main.shake(100, 0.01);
+        }
 
             this.setEnemyState('idle');
             enemyAttacking = false;
