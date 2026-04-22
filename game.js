@@ -47,14 +47,53 @@ class SelectScene extends Phaser.Scene {
     }
 
     create() {
-        // 👇 FONDO (va primero)
-        this.add.image(200, 150, 'select_bg')
+         // 1️⃣ FONDO
+    this.add.image(200, 150, 'select_bg')
         .setDisplaySize(400, 300);
 
-        this.add.text(90, 20, 'Elegí tu rival', {
-            fontSize: '20px',
-            fill: '#ffffff'
-        });
+    // 2️⃣ LUCES (arriba del fondo)
+    let light = this.add.rectangle(200, 40, 400, 60, 0xff00ff, 0.2);
+
+    this.tweens.add({
+        targets: light,
+        alpha: { from: 0.1, to: 0.4 },
+        duration: 600,
+        yoyo: true,
+        repeat: -1
+    });
+
+    // 3️⃣ HUMO (abajo)
+for (let i = 0; i < 8; i++) {
+
+    let smoke = this.add.circle(
+        Phaser.Math.Between(0, 400),
+        Phaser.Math.Between(260, 290),
+        Phaser.Math.Between(20, 40),
+        0xffffff,
+        0.22 // 👈 un poco más blanco
+    );
+
+    smoke.setDepth(1);
+
+    this.tweens.add({
+        targets: smoke,
+        x: smoke.x + Phaser.Math.Between(-60, 60),
+        y: smoke.y - Phaser.Math.Between(10, 25),
+        alpha: { from: 0.15, to: 0.3 }, // 👈 más visible
+        duration: Phaser.Math.Between(2000, 3500),
+        yoyo: true,
+        repeat: -1
+    });
+}
+
+     // 4️⃣ TEXTO Y PERSONAJES (ARRIBA DE TODO)
+    this.add.text(200, 20, 'ELEGÍ TU RIVAL', {
+    fontSize: '22px',
+    fill: '#ffffff',
+    stroke: '#bb0ebb',
+    strokeThickness: 4,
+    fontStyle: 'bold'
+    }).setOrigin(0.5);
 
         this.music = this.sound.add('select_music', { loop: true, volume: 0.4 });
         this.music.play();
@@ -150,10 +189,13 @@ class VsScene extends Phaser.Scene {
         let enemy = this.add.image(500, 150, selected + '_vs')
         .setScale(0.2); // 👈 más grande queda mejor
 
-        let vs = this.add.text(80, 130, "VS", {
-            fontSize: "40px",
-            fill: "#ff0000"
-        }).setAlpha(0);
+        let vs = this.add.text(100, 130, "VS", {
+        fontSize: "50px",
+        fill: "#ff3b3b",
+        stroke: "#000000",
+        strokeThickness: 6,
+        fontStyle: "bold"
+        }).setOrigin(0.5).setAlpha(0);
 
         this.tweens.add({ targets: player, x: 120, duration: 400 });
         this.tweens.add({ targets: enemy, x: 280, duration: 400 });
@@ -191,6 +233,7 @@ class GameScene extends Phaser.Scene {
         this.load.audio('punch', 'assets/sounds/punch.wav');
         this.load.audio('counter', 'assets/sounds/counter.wav');
         this.load.audio('dodge', 'assets/sounds/dodge.wav');
+        this.load.audio('bell', 'assets/sounds/bell.wav');
     }
 
     create() {
@@ -213,6 +256,7 @@ class GameScene extends Phaser.Scene {
 
         counterSound = this.sound.add('counter');
         dodgeSound = this.sound.add('dodge');
+        bellSound = this.sound.add('bell');
 
         this.setEnemyState = (state) => {
             enemy.setTexture(this.enemyKey + '_' + state);
@@ -258,6 +302,7 @@ let centerX = 200, dodgeLeftX = 140, dodgeRightX = 260;
 let gameOver = false;
 let counterSound;
 let dodgeSound;
+let bellSound;
 
 function update() {
     if (gameOver) return;
@@ -342,8 +387,16 @@ function update() {
         }
 
             if (enemyHealth <= 0) {
+                music.stop();        // 👈 corta música
+                bellSound.play();    // 👈 campana
                 gameOver = true;
-                this.add.text(150, 10, "GANASTE!", { fontSize: "20px", fill: "#0f0" });
+                this.add.text(200, 20, "GANASTE!", {
+                    fontSize: "28px",
+                    fill: "#00ff88",
+                    stroke: "#003322",
+                    strokeThickness: 4,
+                    fontStyle: "bold"
+                }).setOrigin(0.5);
             }
         }
     }
@@ -390,11 +443,15 @@ function enemyAttack() {
 
                 if (playerHealth <= 0) {
                     gameOver = true;
-
-                    this.add.text(150, 10, "PERDISTE!", {
-                        fontSize: "20px",
-                        fill: "#ff0000"
-                    });
+                    music.stop();        // 👈 corta música
+                    bellSound.play();    // 👈 campana
+                    this.add.text(200, 20, "PERDISTE!", {
+                    fontSize: "28px",
+                    fill: "#ff4d4d",
+                    stroke: "#330000",
+                    strokeThickness: 4,
+                    fontStyle: "bold"
+                }).setOrigin(0.5);
                 }
             } else {
             dodgeSound.play(); // 👈 SONIDO SOLO CUANDO EL PLAYER ESQUIVA
