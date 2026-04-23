@@ -247,11 +247,27 @@ class GameScene extends Phaser.Scene {
         let selected = this.registry.get('enemySelected');
         this.enemyKey = selected;
 
+        const enemyStats = {
+            caralucas: { health: 6, attackSpeed: 2200, dodgeChance: 0.3, damage: 1 },
+            negrouu:   { health: 4, attackSpeed: 1500, dodgeChance: 0.5, damage: 1 },
+            santos:    { health: 5, attackSpeed: 1800, dodgeChance: 0.4, damage: 1 },
+            sebu:      { health: 7, attackSpeed: 2500, dodgeChance: 0.2, damage: 2 },
+            nahui:     { health: 5, attackSpeed: 1700, dodgeChance: 0.6, damage: 1 },
+            oscar:     { health: 6, attackSpeed: 2000, dodgeChance: 0.3, damage: 2 },
+            juano:     { health: 5, attackSpeed: 1600, dodgeChance: 0.4, damage: 1 },
+            chino:     { health: 8, attackSpeed: 2800, dodgeChance: 0.2, damage: 2 }
+        };
+
+        this.enemyStats = enemyStats[selected];
+
         enemy = this.add.image(200, 180, selected + '_idle').setScale(0.2);
         player = this.add.image(200, 240, 'p_idle').setScale(0.2);
 
         playerBar = this.add.rectangle(20, 20, 100, 10, 0x00ff00).setOrigin(0);
         enemyBar = this.add.rectangle(280, 20, 100, 10, 0xff0000).setOrigin(0);
+
+        enemyHealth = this.enemyStats.health;
+        enemyBar.width = enemyHealth * 20;
 
         cursors = this.input.keyboard.createCursorKeys();
         punchSound = this.sound.add('punch');
@@ -270,11 +286,46 @@ class GameScene extends Phaser.Scene {
         };
 
         this.time.addEvent({
-            delay: 2000,
+            delay: this.enemyStats.attackSpeed,
             callback: () => enemyAttack.call(this),
             loop: true
         });
+                // -------- CONTROLES MOBILE --------
+        this.leftPressed = false;
+        this.rightPressed = false;
+        this.punchPressed = false;
+
+        // ⬅️
+        let leftBtn = this.add.rectangle(50, 260, 60, 40, 0x000000, 0.5)
+            .setInteractive();
+
+        this.add.text(50, 260, '⬅️').setOrigin(0.5);
+
+        leftBtn.on('pointerdown', () => this.leftPressed = true);
+        leftBtn.on('pointerup', () => this.leftPressed = false);
+        leftBtn.on('pointerout', () => this.leftPressed = false);
+
+        // ➡️
+        let rightBtn = this.add.rectangle(120, 260, 60, 40, 0x000000, 0.5)
+            .setInteractive();
+
+        this.add.text(120, 260, '➡️').setOrigin(0.5);
+
+        rightBtn.on('pointerdown', () => this.rightPressed = true);
+        rightBtn.on('pointerup', () => this.rightPressed = false);
+        rightBtn.on('pointerout', () => this.rightPressed = false);
+
+        // 👊
+        let punchBtn = this.add.rectangle(350, 260, 80, 50, 0xff0000, 0.6)
+            .setInteractive();
+
+        this.add.text(350, 260, '👊').setOrigin(0.5);
+
+        punchBtn.on('pointerdown', () => this.punchPressed = true);
+        punchBtn.on('pointerup', () => this.punchPressed = false);
+        punchBtn.on('pointerout', () => this.punchPressed = false);
     }
+
 
     update() {
         update.call(this);
@@ -295,8 +346,8 @@ let player, enemy, cursors;
 let punchSound, music;
 let playerBar, enemyBar;
 
-let enemyHealth = 5;
-let playerHealth = 5;
+let enemyHealth;
+let playerHealth = 10;
 
 let canPunch = true;
 let canCounter = false;
@@ -320,19 +371,19 @@ function update() {
         player.setTexture('p_idle');
     }
 
-    if (Phaser.Input.Keyboard.JustDown(cursors.left)) {
+    if (Phaser.Input.Keyboard.JustDown(cursors.left) || this.leftPressed) {
         player.x = dodgeLeftX;
         dodgeTimer = 300;
         player.setTexture('p_left');
     }
 
-    if (Phaser.Input.Keyboard.JustDown(cursors.right)) {
+    if (Phaser.Input.Keyboard.JustDown(cursors.right) || this.rightPressed) {
         player.x = dodgeRightX;
         dodgeTimer = 300;
         player.setTexture('p_right');
     }
 
-    if (Phaser.Input.Keyboard.JustDown(cursors.space) && canPunch && !enemyAttacking) {
+    if ((Phaser.Input.Keyboard.JustDown(cursors.space) || this.punchPressed) && canPunch && !enemyAttacking) {
         canPunch = false;
         setTimeout(() => canPunch = true, 500);
 
@@ -343,7 +394,7 @@ function update() {
 
         if (distance < 50) {
 
-        if (Math.random() < 0.5 && !enemyStunned) {
+        if (Math.random() < this.enemyStats.dodgeChance && !enemyStunned) {
         
         this.enemyDodgeSound.play();
 
@@ -368,16 +419,18 @@ function update() {
 
         let damage = canCounter ? 2 : 1;
 
+        enemyHealth -= damage;
+        enemyHealth = Math.max(0, enemyHealth);
+
+        enemyBar.width = enemyHealth * 20;
+
         // 🔊 sonido
         if (canCounter) {
             counterSound.play({ volume: 1.0 }); // fuerte
         } else {
             punchSound.play({ volume: 0.5 }); // normal
         }
-
-        enemyHealth -= damage;
-        enemyBar.width = enemyHealth * 20;
-
+        
             this.setEnemyState('hit');
             setTimeout(() => this.setEnemyState('idle'), 200);
             // 👇 SOLO EFECTO (sin cambiar lógica)
@@ -443,7 +496,7 @@ function enemyAttack() {
                 (attackSide === "right" && player.x === dodgeLeftX);
 
             if (!dodged) {
-                playerHealth--;
+                playerHealth -= this.enemyStats.damage;
                 playerHealth = Math.max(0, playerHealth);
 
                 playerBar.width = playerHealth * 20;
