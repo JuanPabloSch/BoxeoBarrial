@@ -23,8 +23,22 @@ class MenuScene extends Phaser.Scene {
             this.music.stop();
             this.scene.start('SelectScene');
         });
+        // 4️⃣ BOTÓN MOBILE (AL FINAL)
+    let startBtn = this.add.rectangle(200, 250, 120, 40, 0x000000, 0.6)
+    .setInteractive();
+
+    this.add.text(200, 250, 'START', {
+        fontSize: '20px',
+        fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    startBtn.on('pointerdown', () => {
+        this.music.stop();
+        this.scene.start('SelectScene');
+    });
     }
-}
+    }
+
 
 class SelectScene extends Phaser.Scene {
     constructor() {
@@ -134,24 +148,99 @@ for (let i = 0; i < 8; i++) {
         this.seleccion = 0;
         this.cursors = this.input.keyboard.createCursorKeys();
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+        this.leftPressed = false;
+        this.rightPressed = false;
+        this.upPressed = false;
+        this.downPressed = false;
+        this.selectPressed = false;
+
+        // ⬅️
+        let leftBtn = this.add.rectangle(50, 260, 50, 35, 0x000000, 0.5).setInteractive();
+        this.add.text(50, 260, '⬅️').setOrigin(0.5);
+
+                leftBtn.on('pointerdown', () => {
+            this.leftPressed = true;
+
+            this.time.delayedCall(50, () => {
+                this.leftPressed = false;
+            });
+        });
+
+        // ➡️
+        let rightBtn = this.add.rectangle(110, 260, 50, 35, 0x000000, 0.5).setInteractive();
+        this.add.text(110, 260, '➡️').setOrigin(0.5);
+
+        rightBtn.on('pointerdown', () => {
+            this.rightPressed = true;
+
+            this.time.delayedCall(50, () => {
+                this.rightPressed = false;
+            });
+        });
+        
+
+        // ⬆️
+        let upBtn = this.add.rectangle(80, 230, 50, 35, 0x000000, 0.5).setInteractive();
+        this.add.text(80, 230, '⬆️').setOrigin(0.5);
+
+        upBtn.on('pointerdown', () => {
+            this.upPressed = true;
+
+            this.time.delayedCall(50, () => {
+                this.upPressed = false;
+            });
+        });
+
+        // ⬇️
+        let downBtn = this.add.rectangle(80, 290, 50, 35, 0x000000, 0.5).setInteractive();
+        this.add.text(80, 290, '⬇️').setOrigin(0.5);
+
+        downBtn.on('pointerdown', () => {
+            this.downPressed = true;
+
+            this.time.delayedCall(50, () => {
+                this.downPressed = false;
+            });
+        });
+
+        // START
+        let selectBtn = this.add.rectangle(350, 260, 80, 40, 0xff0000, 0.6).setInteractive();
+        this.add.text(350, 260, 'OK').setOrigin(0.5);
+
+        selectBtn.on('pointerdown', () => {
+            this.selectPressed = true;
+
+            this.time.delayedCall(50, () => {
+                this.selectPressed = false;
+            });
+        });
     }
 
     update() {
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.right))
-            this.seleccion = (this.seleccion + 1) % 8;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.right) || this.rightPressed) {
+        this.seleccion = (this.seleccion + 1) % 8;
+        this.rightPressed = false; // 👈 CLAVE
+    }
 
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.left))
-            this.seleccion = (this.seleccion - 1 + 8) % 8;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.left) || this.leftPressed) {
+    this.seleccion = (this.seleccion - 1 + 8) % 8;
+    this.leftPressed = false;
+}
 
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.down))
-            this.seleccion = (this.seleccion + 4) % 8;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.down) || this.downPressed) {
+    this.seleccion = (this.seleccion + 4) % 8;
+    this.downPressed = false;
+}
 
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.up))
-            this.seleccion = (this.seleccion - 4 + 8) % 8;
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || this.upPressed) {
+    this.seleccion = (this.seleccion - 4 + 8) % 8;
+    this.upPressed = false;
+}
 
         this.borders.forEach((b, i) => b.setVisible(i === this.seleccion));
 
-        if (Phaser.Input.Keyboard.JustDown(this.space)) {
+        if (Phaser.Input.Keyboard.JustDown(this.space) || this.selectPressed) {
             let elegido = this.enemigos[this.seleccion];
             this.selectSound.play();
             this.music.stop();
